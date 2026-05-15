@@ -28,6 +28,9 @@ def next_runs_tz(
     tz_name:
         IANA timezone name, e.g. ``"America/New_York"``.
     """
+    if count < 1:
+        raise ValueError(f"count must be a positive integer, got {count!r}")
+
     tz = get_timezone(tz_name)
 
     if start is None:
@@ -53,3 +56,23 @@ def next_runs_tz_from_expr(
     """Convenience wrapper: parse *expression* then call :func:`next_runs_tz`."""
     cron = parse(expression)
     return next_runs_tz(cron, count=count, start=start, tz_name=tz_name)
+
+
+def next_run_tz(
+    cron: ParsedCron,
+    start: Optional[datetime] = None,
+    tz_name: str = "UTC",
+) -> datetime:
+    """Return the single next run time for *cron* expressed in *tz_name*.
+
+    Parameters
+    ----------
+    cron:
+        A parsed cron expression.
+    start:
+        Reference datetime.  Defaults to the current time in *tz_name*.
+        Naive datetimes are treated as being in *tz_name*.
+    tz_name:
+        IANA timezone name, e.g. ``"America/New_York"``.
+    """
+    return next_runs_tz(cron, count=1, start=start, tz_name=tz_name)[0]
