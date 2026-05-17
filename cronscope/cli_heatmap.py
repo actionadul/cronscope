@@ -42,6 +42,26 @@ def build_heatmap_parser(subparsers: argparse._SubParsersAction) -> argparse.Arg
     return p
 
 
+def _write_hour_heatmap(args: argparse.Namespace, out) -> None:
+    """Build and write the hourly heatmap section to *out*."""
+    heat = build_hour_heatmap(
+        args.expression, count=args.count, timezone=args.timezone
+    )
+    out.write("=== Hourly Activity ===\n")
+    out.write(format_hour_heatmap(heat))
+    out.write("\n")
+
+
+def _write_weekday_heatmap(args: argparse.Namespace, out) -> None:
+    """Build and write the weekday heatmap section to *out*."""
+    heat_wd = build_weekday_heatmap(
+        args.expression, count=args.count, timezone=args.timezone
+    )
+    out.write("\n=== Weekday Activity ===\n")
+    out.write(format_weekday_heatmap(heat_wd))
+    out.write("\n")
+
+
 def run_heatmap(args: argparse.Namespace, out=sys.stdout, err=sys.stderr) -> int:
     """Execute the heatmap sub-command.  Returns an exit code."""
     try:
@@ -52,20 +72,10 @@ def run_heatmap(args: argparse.Namespace, out=sys.stdout, err=sys.stderr) -> int
 
     try:
         if args.mode in ("hour", "both"):
-            heat = build_hour_heatmap(
-                args.expression, count=args.count, timezone=args.timezone
-            )
-            out.write("=== Hourly Activity ===\n")
-            out.write(format_hour_heatmap(heat))
-            out.write("\n")
+            _write_hour_heatmap(args, out)
 
         if args.mode in ("weekday", "both"):
-            heat_wd = build_weekday_heatmap(
-                args.expression, count=args.count, timezone=args.timezone
-            )
-            out.write("\n=== Weekday Activity ===\n")
-            out.write(format_weekday_heatmap(heat_wd))
-            out.write("\n")
+            _write_weekday_heatmap(args, out)
     except Exception as exc:  # pragma: no cover
         err.write(f"Error: {exc}\n")
         return 1
